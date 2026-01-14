@@ -83,6 +83,17 @@
             android:layout_height="match_parent"
             android:visibility="gone" />
 
+        <com.sayandgone.view.AttackView
+            android:id="@+id/attackView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <View
+            android:id="@+id/touchOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
         <TextView
             android:id="@+id/releaseHint"
             android:layout_width="wrap_content"

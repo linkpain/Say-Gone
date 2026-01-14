@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Button
@@ -20,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.sayandgone.data.EndingPhrases
+import com.sayandgone.view.AttackView
 import com.sayandgone.view.EmotionView
 import com.sayandgone.view.SatisfactionView
 import com.sayandgone.viewmodel.MainViewModel
@@ -39,6 +41,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mainButton: Button
     private lateinit var emotionView: EmotionView
     private lateinit var satisfactionView: SatisfactionView
+    private lateinit var attackView: AttackView
+    private lateinit var touchOverlay: View
     private lateinit var releaseHint: TextView
     private lateinit var clickCountText: TextView
     private lateinit var finishReleaseButton: Button
@@ -60,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         setupInputListener()
         setupButtonListener()
         setupEmotionViewListener()
+        setupAttackListener()
         observeViewModel()
     }
 
@@ -73,6 +78,8 @@ class MainActivity : AppCompatActivity() {
         mainButton = findViewById(R.id.mainButton)
         emotionView = findViewById(R.id.emotionView)
         satisfactionView = findViewById(R.id.satisfactionView)
+        attackView = findViewById(R.id.attackView)
+        touchOverlay = findViewById(R.id.touchOverlay)
         releaseHint = findViewById(R.id.releaseHint)
         clickCountText = findViewById(R.id.clickCountText)
         finishReleaseButton = findViewById(R.id.finishReleaseButton)
@@ -138,6 +145,64 @@ class MainActivity : AppCompatActivity() {
                 updateClickCountText()
             }
         }
+    }
+
+    private fun setupAttackListener() {
+        touchOverlay.setOnTouchListener { _, event ->
+            android.util.Log.d("MainActivity", "Touch event: action=${event.action}, isReleasing=${viewModel.isReleasing.value}")
+            if (viewModel.isReleasing.value && event.action == MotionEvent.ACTION_DOWN) {
+                val text = viewModel.inputText.value
+                android.util.Log.d("MainActivity", "Text: $text")
+                if (text.isNotEmpty()) {
+                    val lines = text.split("\n")
+                    val randomLine = lines.random()
+                    android.util.Log.d("MainActivity", "Launching attack: $randomLine")
+                    launchAttack(0f, 0f, randomLine)
+                }
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun launchAttack(startX: Float, startY: Float, text: String) {
+        android.util.Log.d("MainActivity", "launchAttack called: text=$text")
+        val emotionCenterX = releaseContainer.width / 2f
+        val emotionCenterY = releaseContainer.height / 2f
+        android.util.Log.d("MainActivity", "Container size: ${releaseContainer.width}x${releaseContainer.height}, target: ($emotionCenterX, $emotionCenterY)")
+        
+        val (attackStartX, attackStartY) = getRandomStartPosition(emotionCenterX, emotionCenterY)
+        android.util.Log.d("MainActivity", "Attack start position: ($attackStartX, $attackStartY)")
+        
+        attackView.visibility = View.VISIBLE
+        attackView.onHitListener = {
+            viewModel.incrementClick()
+            emotionView.pulse()
+            updateClickCountText()
+        }
+        
+        attackView.launchAttack(attackStartX, attackStartY, emotionCenterX, emotionCenterY, text)
+        android.util.Log.d("MainActivity", "Attack started")
+    }
+
+    private fun getRandomStartPosition(targetX: Float, targetY: Float): Pair<Float, Float> {
+        val width = releaseContainer.width.toFloat()
+        val height = releaseContainer.height.toFloat()
+        val margin = 50f
+        
+        val positions = mutableListOf<Pair<Float, Float>>()
+        
+        positions.add(Pair(0f, margin + (height - 2 * margin) * kotlin.random.Random.nextFloat()))
+        positions.add(Pair(width, margin + (height - 2 * margin) * kotlin.random.Random.nextFloat()))
+        positions.add(Pair(margin + (width - 2 * margin) * kotlin.random.Random.nextFloat(), 0f))
+        positions.add(Pair(margin + (width - 2 * margin) * kotlin.random.Random.nextFloat(), height))
+        positions.add(Pair(0f, 0f))
+        positions.add(Pair(width, 0f))
+        positions.add(Pair(0f, height))
+        positions.add(Pair(width, height))
+        
+        return positions.random()
     }
 
     private fun observeViewModel() {
@@ -237,6 +302,7 @@ class MainActivity : AppCompatActivity() {
 
         satisfactionView.reset()
         satisfactionView.visibility = View.GONE
+        attackView.reset()
         finishReleaseButton.visibility = View.VISIBLE
         releaseHint.visibility = View.VISIBLE
         clickCountText.visibility = View.VISIBLE
