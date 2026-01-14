@@ -240,6 +240,7 @@ class MainActivity : AppCompatActivity() {
         releaseHint.visibility = View.VISIBLE
         clickCountText.visibility = View.VISIBLE
         clickCountText.text = ""
+        mainButton.visibility = View.GONE
 
         inputContainer.animate()
             .alpha(0f)
@@ -359,6 +360,9 @@ class MainActivity : AppCompatActivity() {
         inputEditText.isClickable = true
 
         mainButton.text = getString(R.string.button_initial)
+        mainButton.visibility = View.VISIBLE
+        mainButton.alpha = 1f
+        mainButton.isEnabled = true
 
         viewModel.undo()
         emotionView.reset()
@@ -390,12 +394,25 @@ class MainActivity : AppCompatActivity() {
         viewModel.setEndingPhrase(phrase)
 
         endingPhraseText.text = phrase
-        endingPhraseText.animate()
-            .alpha(1f)
-            .setDuration(500)
-            .start()
+        endingPhraseText.alpha = 0f
 
         mainButton.text = getString(R.string.button_close)
+        mainButton.visibility = View.VISIBLE
+        mainButton.alpha = 0f
+        mainButton.isEnabled = false
+
+        endingPhraseText.postDelayed({
+            endingPhraseText.animate()
+                .alpha(1f)
+                .setDuration(500)
+                .start()
+
+            mainButton.animate()
+                .alpha(1f)
+                .setDuration(500)
+                .start()
+            mainButton.isEnabled = true
+        }, 1000)
     }
 
     override fun onDestroy() {
