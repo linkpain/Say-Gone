@@ -304,11 +304,6 @@ class MainActivity : AppCompatActivity() {
                     .setDuration(500)
                     .start()
 
-                undoHint.animate()
-                    .alpha(1f)
-                    .setDuration(500)
-                    .start()
-
                 viewModel.destroy()
                 startUndoTimer()
             }
@@ -318,10 +313,8 @@ class MainActivity : AppCompatActivity() {
     private fun startUndoTimer() {
         undoTimer?.cancel()
 
-        undoTimer = object : CountDownTimer(10000, 1000) {
+        undoTimer = object : CountDownTimer(2000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                val seconds = (millisUntilFinished / 1000).toInt()
-                undoHint.text = "如果你还没准备好，它还在 ($seconds)"
             }
 
             override fun onFinish() {
