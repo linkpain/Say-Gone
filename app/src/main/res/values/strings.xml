@@ -12,4 +12,15 @@
     <string name="undo_hint">如果你还没准备好，它还在</string>
     <string name="onboarding_line1">你写下的任何内容</string>
     <string name="onboarding_line2">都不会被保存</string>
+    <string-array name="profanity_library">
+        <item>艹尼马</item>
+        <item>你TM有病</item>
+        <item>让你TM画饼</item>
+        <item>让你PUA我</item>
+        <item>干你妈</item>
+        <item>霸王龙徒手捏爆你妈的行星</item>
+        <item>CNM</item>
+        <item>CTMD</item>
+        <item>CNND</item>
+    </string-array>
 </resources>

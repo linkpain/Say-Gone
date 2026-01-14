@@ -30,6 +30,17 @@ import java.util.Calendar
 import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
+    private val profanityLibrary = listOf(
+        "艹尼马",
+        "你TM有病",
+        "让你TM画饼",
+        "让你PUA我",
+        "干你妈",
+        "霸王龙徒手捏爆你妈的行星",
+        "CNM",
+        "CTMD",
+        "CNND"
+    )
 
     private lateinit var viewModel: MainViewModel
     private lateinit var rootLayout: FrameLayout
@@ -153,6 +164,9 @@ class MainActivity : AppCompatActivity() {
             if (viewModel.isReleasing.value && event.action == MotionEvent.ACTION_DOWN) {
                 val text = viewModel.inputText.value
                 android.util.Log.d("MainActivity", "Text: $text")
+                
+                launchProfanityAttack()
+                
                 if (text.isNotEmpty()) {
                     val lines = text.split("\n")
                     val randomLine = lines.random()
@@ -186,6 +200,25 @@ class MainActivity : AppCompatActivity() {
         android.util.Log.d("MainActivity", "Attack started")
     }
 
+    private fun launchProfanityAttack() {
+        val emotionCenterX = releaseContainer.width / 2f
+        val emotionCenterY = releaseContainer.height / 2f
+        
+        val (attackStartX, attackStartY) = getProfanityAttackPosition()
+        val profanityText = profanityLibrary.random()
+        
+        android.util.Log.d("MainActivity", "Profanity attack from ($attackStartX, $attackStartY): $profanityText")
+        
+        attackView.visibility = View.VISIBLE
+        attackView.onHitListener = {
+            viewModel.incrementClick()
+            emotionView.pulse()
+            updateClickCountText()
+        }
+        
+        attackView.launchAttack(attackStartX, attackStartY, emotionCenterX, emotionCenterY, profanityText)
+    }
+
     private fun getRandomStartPosition(targetX: Float, targetY: Float): Pair<Float, Float> {
         val width = releaseContainer.width.toFloat()
         val height = releaseContainer.height.toFloat()
@@ -201,6 +234,23 @@ class MainActivity : AppCompatActivity() {
         positions.add(Pair(width, 0f))
         positions.add(Pair(0f, height))
         positions.add(Pair(width, height))
+        
+        return positions.random()
+    }
+
+    private fun getProfanityAttackPosition(): Pair<Float, Float> {
+        val width = releaseContainer.width.toFloat()
+        val height = releaseContainer.height.toFloat()
+        val margin = 50f
+        
+        val positions = mutableListOf<Pair<Float, Float>>()
+        
+        positions.add(Pair(width / 2f, 0f))
+        positions.add(Pair(width / 2f, height))
+        positions.add(Pair(0f, height / 3f))
+        positions.add(Pair(0f, height * 2f / 3f))
+        positions.add(Pair(width, height / 3f))
+        positions.add(Pair(width, height * 2f / 3f))
         
         return positions.random()
     }
