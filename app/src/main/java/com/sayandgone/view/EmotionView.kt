@@ -9,7 +9,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
-import kotlin.math.*
+import kotlin.math.min
 import kotlin.random.Random
 
 class EmotionView @JvmOverloads constructor(
@@ -58,10 +58,31 @@ class EmotionView @JvmOverloads constructor(
         paint.color = emotionColor
         paint.alpha = (255 * alpha).toInt()
         paint.style = Paint.Style.FILL
+        paint.strokeWidth = 12f
+        paint.strokeCap = Paint.Cap.ROUND
 
         canvas.save()
         canvas.scale(scale, scale, centerX, centerY)
-        canvas.drawCircle(centerX, centerY, emotionRadius, paint)
+
+        val headRadius = emotionRadius * 0.35f
+        val bodyLength = emotionRadius * 1.5f
+        val limbLength = emotionRadius * 1.0f
+
+        val headCenterY = centerY - bodyLength * 0.4f
+        val bodyTopY = headCenterY + headRadius
+        val bodyBottomY = centerY + bodyLength * 0.6f
+
+        canvas.drawCircle(centerX, headCenterY, headRadius, paint)
+
+        paint.style = Paint.Style.STROKE
+        canvas.drawLine(centerX, bodyTopY, centerX, bodyBottomY, paint)
+
+        canvas.drawLine(centerX, bodyTopY + limbLength * 0.3f, centerX - limbLength * 0.5f, bodyTopY + limbLength * 0.7f, paint)
+        canvas.drawLine(centerX, bodyTopY + limbLength * 0.3f, centerX + limbLength * 0.5f, bodyTopY + limbLength * 0.7f, paint)
+
+        canvas.drawLine(centerX, bodyBottomY, centerX - limbLength * 0.5f, bodyBottomY + limbLength, paint)
+        canvas.drawLine(centerX, bodyBottomY, centerX + limbLength * 0.5f, bodyBottomY + limbLength, paint)
+
         canvas.restore()
     }
 
@@ -121,11 +142,30 @@ class EmotionView @JvmOverloads constructor(
 
     private fun createParticles() {
         val particleCount = 50
+        val headRadius = emotionRadius * 0.25f
+        val bodyLength = emotionRadius * 1.2f
+        val limbLength = emotionRadius * 0.8f
+
+        val headCenterY = centerY - bodyLength * 0.4f
+        val bodyTopY = headCenterY + headRadius
+        val bodyBottomY = centerY + bodyLength * 0.6f
+
+        val bodyParts = listOf(
+            Pair(centerX, headCenterY),
+            Pair(centerX, bodyTopY),
+            Pair(centerX, bodyBottomY),
+            Pair(centerX - limbLength * 0.5f, bodyTopY + limbLength * 0.7f),
+            Pair(centerX + limbLength * 0.5f, bodyTopY + limbLength * 0.7f),
+            Pair(centerX - limbLength * 0.5f, bodyBottomY + limbLength),
+            Pair(centerX + limbLength * 0.5f, bodyBottomY + limbLength)
+        )
+
         for (i in 0 until particleCount) {
-            val angle = Random.nextFloat() * 2 * PI.toFloat()
-            val distance = Random.nextFloat() * emotionRadius
-            val x = centerX + cos(angle) * distance
-            val y = centerY + sin(angle) * distance
+            val bodyPart = bodyParts.random()
+            val offsetX = Random.nextFloat() * 20f - 10f
+            val offsetY = Random.nextFloat() * 20f - 10f
+            val x = bodyPart.first + offsetX
+            val y = bodyPart.second + offsetY
             val radius = Random.nextFloat() * 8f + 4f
 
             particles.add(

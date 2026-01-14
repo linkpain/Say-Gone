@@ -48,7 +48,6 @@ class SatisfactionView @JvmOverloads constructor(
         
         textPaint.color = Color.WHITE
         textPaint.textAlign = Paint.Align.CENTER
-        textPaint.textSize = textSize
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         
         shadowPaint.color = Color.parseColor("#EF4444")
@@ -58,8 +57,12 @@ class SatisfactionView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldh, oldh)
+        
+        textSize = min(w, h) * 0.7f
+        textPaint.textSize = textSize
+        
         textX = w / 2f
-        textY = -textSize
+        textY = -textSize * 2
         targetX = w / 2f
         targetY = h / 2f
     }
