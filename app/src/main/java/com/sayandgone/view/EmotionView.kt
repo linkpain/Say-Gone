@@ -20,6 +20,7 @@ class EmotionView @JvmOverloads constructor(
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val blurPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var emotionColor = Color.parseColor("#6B7280")
     private var emotionRadius = 0f
     private var centerX = 0f
@@ -27,6 +28,7 @@ class EmotionView @JvmOverloads constructor(
     private var alpha = 1f
     private var scale = 1f
     private var isDissolving = false
+    private var emotionName = ""
 
     private val particles = mutableListOf<Particle>()
     private var particleAnimator: ValueAnimator? = null
@@ -35,6 +37,10 @@ class EmotionView @JvmOverloads constructor(
 
     init {
         blurPaint.maskFilter = BlurMaskFilter(20f, BlurMaskFilter.Blur.NORMAL)
+        textPaint.color = Color.WHITE
+        textPaint.textAlign = Paint.Align.CENTER
+        textPaint.textSize = 40f
+        textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -74,6 +80,26 @@ class EmotionView @JvmOverloads constructor(
 
         canvas.drawCircle(centerX, headCenterY, headRadius, paint)
 
+        // Draw emotion name inside the head if available
+        if (emotionName.isNotEmpty()) {
+            val textBounds = Rect()
+            textPaint.getTextBounds(emotionName, 0, emotionName.length, textBounds)
+            val textWidth = textBounds.width().toFloat()
+            val textHeight = textBounds.height().toFloat()
+            
+            // Calculate max font size to fit in circle
+            var textSize = 40f
+            textPaint.textSize = textSize
+            
+            while (textWidth > headRadius * 1.8f || textHeight > headRadius * 1.8f) {
+                textSize -= 2f
+                textPaint.textSize = textSize
+                textPaint.getTextBounds(emotionName, 0, emotionName.length, textBounds)
+            }
+            
+            canvas.drawText(emotionName, centerX, headCenterY + textHeight / 2, textPaint)
+        }
+
         paint.style = Paint.Style.STROKE
         canvas.drawLine(centerX, bodyTopY, centerX, bodyBottomY, paint)
 
@@ -105,6 +131,11 @@ class EmotionView @JvmOverloads constructor(
 
     fun setEmotionColor(color: Int) {
         emotionColor = color
+        invalidate()
+    }
+
+    fun setEmotionName(name: String) {
+        emotionName = name
         invalidate()
     }
 

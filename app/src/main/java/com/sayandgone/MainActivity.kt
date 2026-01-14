@@ -156,6 +156,7 @@ class MainActivity : AppCompatActivity() {
                     emotionNameInput.setText(name)
                     emotionNameInput.setSelection(name.length)
                 }
+                emotionView.setEmotionName(name)
             }
         }
 
