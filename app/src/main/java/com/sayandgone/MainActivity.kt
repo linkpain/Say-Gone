@@ -13,23 +13,35 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.sayandgone.data.EndingPhrases
+import com.sayandgone.view.EmotionView
+import com.sayandgone.view.SatisfactionView
 import com.sayandgone.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var viewModel: MainViewModel
     private lateinit var rootLayout: FrameLayout
+    private lateinit var inputContainer: LinearLayout
+    private lateinit var releaseContainer: FrameLayout
+    private lateinit var emotionNameInput: EditText
     private lateinit var inputEditText: EditText
     private lateinit var hintText: TextView
     private lateinit var mainButton: Button
+    private lateinit var emotionView: EmotionView
+    private lateinit var satisfactionView: SatisfactionView
+    private lateinit var releaseHint: TextView
+    private lateinit var clickCountText: TextView
+    private lateinit var finishReleaseButton: Button
     private lateinit var disappearedText: TextView
     private lateinit var undoHint: TextView
     private lateinit var endingPhraseText: TextView
@@ -47,20 +59,39 @@ class MainActivity : AppCompatActivity() {
         initViews()
         setupInputListener()
         setupButtonListener()
+        setupEmotionViewListener()
         observeViewModel()
     }
 
     private fun initViews() {
         rootLayout = findViewById(R.id.rootLayout)
+        inputContainer = findViewById(R.id.inputContainer)
+        releaseContainer = findViewById(R.id.releaseContainer)
+        emotionNameInput = findViewById(R.id.emotionNameInput)
         inputEditText = findViewById(R.id.inputEditText)
         hintText = findViewById(R.id.hintText)
         mainButton = findViewById(R.id.mainButton)
+        emotionView = findViewById(R.id.emotionView)
+        satisfactionView = findViewById(R.id.satisfactionView)
+        releaseHint = findViewById(R.id.releaseHint)
+        clickCountText = findViewById(R.id.clickCountText)
+        finishReleaseButton = findViewById(R.id.finishReleaseButton)
         disappearedText = findViewById(R.id.disappearedText)
         undoHint = findViewById(R.id.undoHint)
         endingPhraseText = findViewById(R.id.endingPhraseText)
     }
 
     private fun setupInputListener() {
+        emotionNameInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                viewModel.updateEmotionName(s?.toString() ?: "")
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
         inputEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -88,9 +119,23 @@ class MainActivity : AppCompatActivity() {
                 viewModel.endingPhrase.value.isNotEmpty() -> {
                     finish()
                 }
-                viewModel.inputText.value.isNotEmpty() -> {
-                    startDestructionCeremony()
+                viewModel.inputText.value.isNotEmpty() || viewModel.emotionName.value.isNotEmpty() -> {
+                    startReleasingPhase()
                 }
+            }
+        }
+
+        finishReleaseButton.setOnClickListener {
+            finishRelease()
+        }
+    }
+
+    private fun setupEmotionViewListener() {
+        emotionView.onClickListener = {
+            if (viewModel.isReleasing.value) {
+                viewModel.incrementClick()
+                emotionView.pulse()
+                updateClickCountText()
             }
         }
     }
@@ -98,10 +143,25 @@ class MainActivity : AppCompatActivity() {
     private fun observeViewModel() {
         lifecycleScope.launch {
             viewModel.inputText.collect { text ->
-                if (!viewModel.isDestroyed.value) {
+                if (!viewModel.isDestroyed.value && !viewModel.isReleasing.value) {
                     inputEditText.setText(text)
                     inputEditText.setSelection(text.length)
                 }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.emotionName.collect { name ->
+                if (!viewModel.isDestroyed.value && !viewModel.isReleasing.value) {
+                    emotionNameInput.setText(name)
+                    emotionNameInput.setSelection(name.length)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.releaseIntensity.collect { intensity ->
+                updateEmotionColor(intensity)
             }
         }
     }
@@ -170,46 +230,88 @@ class MainActivity : AppCompatActivity() {
         return Color.rgb(newRed, newGreen, newBlue)
     }
 
-    private fun startDestructionCeremony() {
+    private fun startReleasingPhase() {
         viewModel.saveText()
+        viewModel.startReleasing()
 
-        inputEditText.isFocusable = false
-        inputEditText.isFocusableInTouchMode = false
-        inputEditText.isClickable = false
+        satisfactionView.reset()
+        satisfactionView.visibility = View.GONE
+        finishReleaseButton.visibility = View.VISIBLE
+        releaseHint.visibility = View.VISIBLE
+        clickCountText.visibility = View.VISIBLE
+        clickCountText.text = ""
 
-        mainButton.text = getString(R.string.button_confirmed)
-
-        inputEditText.postDelayed({
-            startMainDestruction()
-        }, 600)
+        inputContainer.animate()
+            .alpha(0f)
+            .setDuration(300)
+            .withEndAction {
+                inputContainer.visibility = View.GONE
+                releaseContainer.visibility = View.VISIBLE
+                releaseContainer.alpha = 0f
+                releaseContainer.animate()
+                    .alpha(1f)
+                    .setDuration(300)
+                    .start()
+            }
+            .start()
     }
 
-    private fun startMainDestruction() {
-        inputEditText.animate()
-            .alpha(0f)
-            .translationY(40f)
-            .setDuration(1200)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .start()
+    private fun updateClickCountText() {
+        val count = viewModel.clickCount.value
+        clickCountText.text = "已点击 $count 次"
+    }
 
-        inputEditText.postDelayed({
-            startAftermath()
-        }, 1800)
+    private fun updateEmotionColor(intensity: MainViewModel.ReleaseIntensity) {
+        val color = when (intensity) {
+            MainViewModel.ReleaseIntensity.LOW -> Color.parseColor("#6B7280")
+            MainViewModel.ReleaseIntensity.MEDIUM -> Color.parseColor("#F59E0B")
+            MainViewModel.ReleaseIntensity.HIGH -> Color.parseColor("#EF4444")
+        }
+        emotionView.setEmotionColor(color)
+    }
+
+    private fun finishRelease() {
+        finishReleaseButton.visibility = View.GONE
+        releaseHint.visibility = View.GONE
+        clickCountText.visibility = View.GONE
+
+        satisfactionView.visibility = View.VISIBLE
+        
+        val emotionCenterX = releaseContainer.width / 2f
+        val emotionCenterY = releaseContainer.height / 2f
+        val emotionRadius = min(releaseContainer.width, releaseContainer.height) / 4f
+        
+        satisfactionView.setEmotionPosition(emotionCenterX, emotionCenterY, emotionRadius)
+        
+        satisfactionView.onCollisionListener = {
+            emotionView.startDissolveAnimation {
+                startAftermath()
+            }
+        }
+        
+        satisfactionView.startFallingAnimation()
     }
 
     private fun startAftermath() {
-        disappearedText.animate()
-            .alpha(1f)
-            .setDuration(500)
-            .start()
+        releaseContainer.animate()
+            .alpha(0f)
+            .setDuration(300)
+            .withEndAction {
+                releaseContainer.visibility = View.GONE
+                disappearedText.animate()
+                    .alpha(1f)
+                    .setDuration(500)
+                    .start()
 
-        undoHint.animate()
-            .alpha(1f)
-            .setDuration(500)
-            .start()
+                undoHint.animate()
+                    .alpha(1f)
+                    .setDuration(500)
+                    .start()
 
-        viewModel.destroy()
-        startUndoTimer()
+                viewModel.destroy()
+                startUndoTimer()
+            }
+            .start()
     }
 
     private fun startUndoTimer() {
@@ -218,7 +320,7 @@ class MainActivity : AppCompatActivity() {
         undoTimer = object : CountDownTimer(10000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val seconds = (millisUntilFinished / 1000).toInt()
-                undoHint.text = "$seconds 秒内可撤销"
+                undoHint.text = "如果你还没准备好，它还在 ($seconds)"
             }
 
             override fun onFinish() {
@@ -245,9 +347,10 @@ class MainActivity : AppCompatActivity() {
             .setDuration(300)
             .start()
 
-        inputEditText.animate()
+        inputContainer.visibility = View.VISIBLE
+        inputContainer.alpha = 0f
+        inputContainer.animate()
             .alpha(1f)
-            .translationY(0f)
             .setDuration(300)
             .start()
 
@@ -258,6 +361,9 @@ class MainActivity : AppCompatActivity() {
         mainButton.text = getString(R.string.button_initial)
 
         viewModel.undo()
+        emotionView.reset()
+        satisfactionView.reset()
+        satisfactionView.visibility = View.GONE
     }
 
     private fun finalizeDestruction() {

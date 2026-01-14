@@ -1,15 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
 
     <LinearLayout
+        android:id="@+id/inputContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="24dp"
+        android:visibility="visible">
+
+        <EditText
+            android:id="@+id/emotionNameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:hint="@string/emotion_name_hint"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:textSize="14sp"
+            android:inputType="text"
+            android:padding="8dp"
+            android:layout_marginBottom="8dp" />
 
         <EditText
             android:id="@+id/inputEditText"
@@ -45,6 +61,62 @@
             android:stateListAnimator="@null" />
 
     </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/releaseContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <com.sayandgone.view.EmotionView
+            android:id="@+id/emotionView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.sayandgone.view.SatisfactionView
+            android:id="@+id/satisfactionView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/releaseHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="180dp"
+            android:text="@string/release_hint"
+            android:textColor="@color/text_hint"
+            android:textSize="14sp"
+            android:alpha="0.7" />
+
+        <TextView
+            android:id="@+id/clickCountText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="140dp"
+            android:text=""
+            android:textColor="@color/text_hint"
+            android:textSize="12sp"
+            android:alpha="0.5" />
+
+        <Button
+            android:id="@+id/finishReleaseButton"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="60dp"
+            android:text="@string/finish_release"
+            android:textColor="@color/button_text"
+            android:textSize="14sp"
+            android:backgroundTint="@color/button_bg"
+            android:stateListAnimator="@null"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:alpha="0.7" />
+
+    </FrameLayout>
 
     <TextView
         android:id="@+id/disappearedText"

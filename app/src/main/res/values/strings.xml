@@ -3,11 +3,14 @@
     <string name="app_name">骂完就删</string>
     <string name="placeholder_text">想骂就骂，这里不会记住任何东西</string>
     <string name="hint_text">内容只存在于当前页面</string>
-    <string name="button_initial">骂完了</string>
+    <string name="emotion_name_hint">给这股情绪起个名字（可选）</string>
+    <string name="button_initial">开始释放</string>
     <string name="button_confirmed">好，已经骂完了。</string>
     <string name="button_close">关闭</string>
+    <string name="release_hint">点得越快，释放得越充分</string>
+    <string name="finish_release">完成释放</string>
     <string name="disappeared">已经消失了</string>
-    <string name="undo_hint">10 秒内可撤销</string>
+    <string name="undo_hint">如果你还没准备好，它还在</string>
     <string name="onboarding_line1">你写下的任何内容</string>
     <string name="onboarding_line2">都不会被保存</string>
 </resources>
