@@ -77,6 +77,14 @@ class MainActivity : AppCompatActivity() {
         setupEmotionViewListener()
         setupAttackListener()
         observeViewModel()
+        
+        mainButton.isEnabled = false
+        object : CountDownTimer(3000, 1000) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() {
+                mainButton.isEnabled = true
+            }
+        }.start()
     }
 
     private fun initViews() {
