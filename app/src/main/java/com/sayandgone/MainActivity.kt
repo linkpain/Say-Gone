@@ -65,6 +65,8 @@ class MainActivity : AppCompatActivity() {
     private var undoTimer: CountDownTimer? = null
     private var breathingAnimator: ValueAnimator? = null
     private var backgroundAnimator: ValueAnimator? = null
+    private var screenShakeX = 0f
+    private var screenShakeY = 0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -363,6 +365,10 @@ class MainActivity : AppCompatActivity() {
         clickCountText.text = ""
         mainButton.visibility = View.GONE
         speechBubble.visibility = View.GONE
+        screenShakeX = 0f
+        screenShakeY = 0f
+        releaseContainer.x = 0f
+        releaseContainer.y = 0f
 
         inputContainer.animate()
             .alpha(0f)
@@ -473,6 +479,13 @@ class MainActivity : AppCompatActivity() {
             emotionView.startDissolveAnimation {
                 startAftermath()
             }
+        }
+        
+        satisfactionView.onScreenShakeListener = { shakeX, shakeY ->
+            screenShakeX = shakeX
+            screenShakeY = shakeY
+            releaseContainer.x = shakeX
+            releaseContainer.y = shakeY
         }
         
         satisfactionView.startFallingAnimation()
