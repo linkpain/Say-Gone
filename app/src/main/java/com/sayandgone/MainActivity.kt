@@ -173,6 +173,10 @@ class MainActivity : AppCompatActivity() {
                 val text = viewModel.inputText.value
                 android.util.Log.d("MainActivity", "Text: $text")
                 
+                viewModel.incrementClick()
+                updateClickCountText()
+                emotionView.pulse()
+                
                 launchProfanityAttack()
                 
                 if (text.isNotEmpty()) {
@@ -198,11 +202,6 @@ class MainActivity : AppCompatActivity() {
         android.util.Log.d("MainActivity", "Attack start position: ($attackStartX, $attackStartY)")
         
         attackView.visibility = View.VISIBLE
-        attackView.onHitListener = {
-            viewModel.incrementClick()
-            emotionView.pulse()
-            updateClickCountText()
-        }
         
         attackView.launchAttack(attackStartX, attackStartY, emotionCenterX, emotionCenterY, text)
         android.util.Log.d("MainActivity", "Attack started")
@@ -218,11 +217,6 @@ class MainActivity : AppCompatActivity() {
         android.util.Log.d("MainActivity", "Profanity attack from ($attackStartX, $attackStartY): $profanityText")
         
         attackView.visibility = View.VISIBLE
-        attackView.onHitListener = {
-            viewModel.incrementClick()
-            emotionView.pulse()
-            updateClickCountText()
-        }
         
         attackView.launchAttack(attackStartX, attackStartY, emotionCenterX, emotionCenterY, profanityText)
     }
