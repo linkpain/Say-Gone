@@ -401,6 +401,7 @@ class MainActivity : AppCompatActivity() {
             count in 30..59 -> {
                 speechBubble.text = "就这就这"
                 speechBubble.visibility = View.VISIBLE
+                positionSpeechBubble()
             }
             count in 60..79 -> {
                 speechBubble.visibility = View.GONE
@@ -408,6 +409,7 @@ class MainActivity : AppCompatActivity() {
             count in 80..129 -> {
                 speechBubble.text = "我是不会被打败的"
                 speechBubble.visibility = View.VISIBLE
+                positionSpeechBubble()
             }
             count in 130..149 -> {
                 speechBubble.visibility = View.GONE
@@ -415,6 +417,7 @@ class MainActivity : AppCompatActivity() {
             count in 150..179 -> {
                 speechBubble.text = "我难道要被挂在路灯上吗？"
                 speechBubble.visibility = View.VISIBLE
+                positionSpeechBubble()
             }
             count in 180..194 -> {
                 speechBubble.visibility = View.GONE
@@ -422,11 +425,34 @@ class MainActivity : AppCompatActivity() {
             count in 195..200 -> {
                 speechBubble.text = "要爆炸啦"
                 speechBubble.visibility = View.VISIBLE
+                positionSpeechBubble()
             }
             count >= 201 -> {
                 speechBubble.visibility = View.GONE
                 finishRelease()
             }
+        }
+    }
+
+    private fun positionSpeechBubble() {
+        releaseContainer.post {
+            val (headX, headY) = emotionView.getHeadTopPosition()
+            val density = resources.displayMetrics.density
+            val offset = 20f * density
+            
+            speechBubble.measure(
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            
+            val bubbleWidth = speechBubble.measuredWidth.toFloat()
+            val bubbleHeight = speechBubble.measuredHeight.toFloat()
+            
+            val x = headX - bubbleWidth / 2f
+            val y = headY - bubbleHeight - offset
+            
+            speechBubble.x = x
+            speechBubble.y = y
         }
     }
 

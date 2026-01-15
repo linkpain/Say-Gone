@@ -230,6 +230,14 @@ class EmotionView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun getHeadTopPosition(): Pair<Float, Float> {
+        val bodyLength = emotionRadius * 1.5f
+        val headRadius = emotionRadius * 0.35f
+        val headCenterY = centerY - bodyLength * 0.4f
+        val headTopY = headCenterY - headRadius
+        return Pair(centerX, headTopY)
+    }
+
     private data class Particle(
         var x: Float,
         var y: Float,
