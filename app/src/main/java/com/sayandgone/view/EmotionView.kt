@@ -114,10 +114,14 @@ class EmotionView @JvmOverloads constructor(
 
     private fun drawParticles(canvas: Canvas) {
         particles.forEach { particle ->
-            paint.color = emotionColor
+            paint.color = particle.color
             paint.alpha = (255 * particle.alpha).toInt()
             paint.style = Paint.Style.FILL
+            
+            canvas.save()
+            canvas.rotate(particle.rotation, particle.x, particle.y)
             canvas.drawCircle(particle.x, particle.y, particle.radius, paint)
+            canvas.restore()
         }
     }
 
@@ -172,7 +176,7 @@ class EmotionView @JvmOverloads constructor(
     }
 
     private fun createParticles() {
-        val particleCount = 50
+        val particleCount = 800
         val headRadius = emotionRadius * 0.25f
         val bodyLength = emotionRadius * 1.2f
         val limbLength = emotionRadius * 0.8f
@@ -191,34 +195,78 @@ class EmotionView @JvmOverloads constructor(
             Pair(centerX + limbLength * 0.5f, bodyBottomY + limbLength)
         )
 
+        val colors = listOf(
+            emotionColor,
+            Color.rgb(255, 255, 255),
+            Color.rgb(255, 200, 100),
+            Color.rgb(100, 200, 255)
+        )
+
         for (i in 0 until particleCount) {
             val bodyPart = bodyParts.random()
-            val offsetX = Random.nextFloat() * 20f - 10f
-            val offsetY = Random.nextFloat() * 20f - 10f
+            val offsetX = Random.nextFloat() * 30f - 15f
+            val offsetY = Random.nextFloat() * 30f - 15f
             val x = bodyPart.first + offsetX
             val y = bodyPart.second + offsetY
-            val radius = Random.nextFloat() * 8f + 4f
+            val radius = Random.nextFloat() * 12f + 3f
+            val color = colors.random()
+            val explosionTime = Random.nextFloat() * 0.3f + 0.2f
 
             particles.add(
                 Particle(
                     x = x,
                     y = y,
                     radius = radius,
-                    velocityX = Random.nextFloat() * 4f - 2f,
-                    velocityY = Random.nextFloat() * 4f - 2f,
-                    alpha = 1f
+                    velocityX = Random.nextFloat() * 8f - 4f,
+                    velocityY = Random.nextFloat() * 8f - 4f,
+                    alpha = 1f,
+                    color = color,
+                    rotation = Random.nextFloat() * 360f,
+                    rotationSpeed = Random.nextFloat() * 10f - 5f,
+                    canExplode = true,
+                    explosionTime = explosionTime,
+                    hasExploded = false
                 )
             )
         }
     }
 
     private fun updateParticles(progress: Float) {
+        val newParticles = mutableListOf<Particle>()
+        
         particles.forEach { particle ->
-            particle.x += particle.velocityX * (1 - progress) * 3f
-            particle.y += particle.velocityY * (1 - progress) * 3f
+            particle.x += particle.velocityX * (1 - progress) * 5f
+            particle.y += particle.velocityY * (1 - progress) * 5f
             particle.alpha = 1f - progress
-            particle.radius *= 0.99f
+            particle.radius *= 0.985f
+            particle.rotation += particle.rotationSpeed * (1 - progress)
+            
+            if (particle.canExplode && !particle.hasExploded && progress >= particle.explosionTime) {
+                particle.hasExploded = true
+                val smallParticleCount = 2
+                for (i in 0 until smallParticleCount) {
+                    val smallRadius = particle.radius * 0.5f
+                    newParticles.add(
+                        Particle(
+                            x = particle.x,
+                            y = particle.y,
+                            radius = smallRadius,
+                            velocityX = Random.nextFloat() * 6f - 3f,
+                            velocityY = Random.nextFloat() * 6f - 3f,
+                            alpha = 1f,
+                            color = particle.color,
+                            rotation = Random.nextFloat() * 360f,
+                            rotationSpeed = Random.nextFloat() * 15f - 7.5f,
+                            canExplode = false,
+                            explosionTime = 0f,
+                            hasExploded = false
+                        )
+                    )
+                }
+            }
         }
+        
+        particles.addAll(newParticles)
     }
 
     fun reset() {
@@ -244,6 +292,12 @@ class EmotionView @JvmOverloads constructor(
         var radius: Float,
         var velocityX: Float,
         var velocityY: Float,
-        var alpha: Float
+        var alpha: Float,
+        var color: Int,
+        var rotation: Float,
+        var rotationSpeed: Float,
+        var canExplode: Boolean,
+        var explosionTime: Float,
+        var hasExploded: Boolean
     )
 }
