@@ -5,6 +5,9 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.AccelerateInterpolator
@@ -40,6 +43,8 @@ class SatisfactionView @JvmOverloads constructor(
     
     private var fallAnimator: ValueAnimator? = null
     private var collisionAnimator: ValueAnimator? = null
+    
+    private val vibrator: Vibrator? = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
     
     var onCollisionListener: (() -> Unit)? = null
     
@@ -181,6 +186,8 @@ class SatisfactionView @JvmOverloads constructor(
     private fun startCollisionAnimation() {
         fallAnimator?.cancel()
         
+        vibrate()
+        
         collisionAnimator = ValueAnimator.ofFloat(1f, 0f).apply {
             duration = 600
             interpolator = DecelerateInterpolator()
@@ -261,6 +268,18 @@ class SatisfactionView @JvmOverloads constructor(
             paint.style = Paint.Style.FILL
             
             canvas.drawCircle(particle.x, particle.y, particle.radius, paint)
+        }
+    }
+    
+    private fun vibrate() {
+        vibrator?.let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val effect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
+                it.vibrate(effect)
+            } else {
+                @Suppress("DEPRECATION")
+                it.vibrate(300)
+            }
         }
     }
     
