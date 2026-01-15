@@ -26,14 +26,14 @@ class MainViewModel : ViewModel() {
     private val _clickCount = MutableStateFlow(0)
     val clickCount: StateFlow<Int> = _clickCount
 
-    private val _releaseIntensity = MutableStateFlow(ReleaseIntensity.LOW)
+    private val _releaseIntensity = MutableStateFlow(ReleaseIntensity.LEVEL_1)
     val releaseIntensity: StateFlow<ReleaseIntensity> = _releaseIntensity
 
     private var savedText = ""
     private var savedEmotionName = ""
 
     enum class ReleaseIntensity {
-        LOW, MEDIUM, HIGH
+        LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, LEVEL_5
     }
 
     fun updateText(text: String) {
@@ -76,7 +76,7 @@ class MainViewModel : ViewModel() {
     fun startReleasing() {
         _isReleasing.value = true
         _clickCount.value = 0
-        _releaseIntensity.value = ReleaseIntensity.LOW
+        _releaseIntensity.value = ReleaseIntensity.LEVEL_1
     }
 
     fun incrementClick() {
@@ -87,9 +87,11 @@ class MainViewModel : ViewModel() {
     private fun updateReleaseIntensity() {
         val count = _clickCount.value
         _releaseIntensity.value = when {
-            count < 5 -> ReleaseIntensity.LOW
-            count < 15 -> ReleaseIntensity.MEDIUM
-            else -> ReleaseIntensity.HIGH
+            count <= 20 -> ReleaseIntensity.LEVEL_1
+            count <= 50 -> ReleaseIntensity.LEVEL_2
+            count <= 100 -> ReleaseIntensity.LEVEL_3
+            count <= 150 -> ReleaseIntensity.LEVEL_4
+            else -> ReleaseIntensity.LEVEL_5
         }
     }
 
@@ -101,7 +103,7 @@ class MainViewModel : ViewModel() {
         _endingPhrase.value = ""
         _isReleasing.value = false
         _clickCount.value = 0
-        _releaseIntensity.value = ReleaseIntensity.LOW
+        _releaseIntensity.value = ReleaseIntensity.LEVEL_1
         savedText = ""
         savedEmotionName = ""
     }

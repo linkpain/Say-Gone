@@ -389,9 +389,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateEmotionColor(intensity: MainViewModel.ReleaseIntensity) {
         val color = when (intensity) {
-            MainViewModel.ReleaseIntensity.LOW -> Color.parseColor("#6B7280")
-            MainViewModel.ReleaseIntensity.MEDIUM -> Color.parseColor("#F59E0B")
-            MainViewModel.ReleaseIntensity.HIGH -> Color.parseColor("#EF4444")
+            MainViewModel.ReleaseIntensity.LEVEL_1 -> Color.parseColor("#6B7280")
+            MainViewModel.ReleaseIntensity.LEVEL_2 -> Color.parseColor("#FFD700")
+            MainViewModel.ReleaseIntensity.LEVEL_3 -> Color.parseColor("#3B82F6")
+            MainViewModel.ReleaseIntensity.LEVEL_4 -> Color.parseColor("#F59E0B")
+            MainViewModel.ReleaseIntensity.LEVEL_5 -> Color.parseColor("#EF4444")
         }
         emotionView.setEmotionColor(color)
     }
