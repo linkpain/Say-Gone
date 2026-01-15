@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var disappearedText: TextView
     private lateinit var undoHint: TextView
     private lateinit var endingPhraseText: TextView
+    private lateinit var speechBubble: TextView
 
     private var undoTimer: CountDownTimer? = null
     private var breathingAnimator: ValueAnimator? = null
@@ -105,6 +106,7 @@ class MainActivity : AppCompatActivity() {
         disappearedText = findViewById(R.id.disappearedText)
         undoHint = findViewById(R.id.undoHint)
         endingPhraseText = findViewById(R.id.endingPhraseText)
+        speechBubble = findViewById(R.id.speechBubble)
     }
 
     private fun setupInputListener() {
@@ -360,6 +362,7 @@ class MainActivity : AppCompatActivity() {
         clickCountText.visibility = View.VISIBLE
         clickCountText.text = ""
         mainButton.visibility = View.GONE
+        speechBubble.visibility = View.GONE
 
         inputContainer.animate()
             .alpha(0f)
@@ -379,6 +382,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateClickCountText() {
         val count = viewModel.clickCount.value
         clickCountText.text = "已点击 $count 次"
+        updateSpeechBubble(count)
     }
 
     private fun updateEmotionColor(intensity: MainViewModel.ReleaseIntensity) {
@@ -390,6 +394,40 @@ class MainActivity : AppCompatActivity() {
             MainViewModel.ReleaseIntensity.LEVEL_5 -> Color.parseColor("#EF4444")
         }
         emotionView.setEmotionColor(color)
+    }
+
+    private fun updateSpeechBubble(count: Int) {
+        when {
+            count in 30..59 -> {
+                speechBubble.text = "就这就这"
+                speechBubble.visibility = View.VISIBLE
+            }
+            count in 60..79 -> {
+                speechBubble.visibility = View.GONE
+            }
+            count in 80..129 -> {
+                speechBubble.text = "我是不会被打败的"
+                speechBubble.visibility = View.VISIBLE
+            }
+            count in 130..149 -> {
+                speechBubble.visibility = View.GONE
+            }
+            count in 150..179 -> {
+                speechBubble.text = "我难道要被挂在路灯上吗？"
+                speechBubble.visibility = View.VISIBLE
+            }
+            count in 180..194 -> {
+                speechBubble.visibility = View.GONE
+            }
+            count in 195..200 -> {
+                speechBubble.text = "要爆炸啦"
+                speechBubble.visibility = View.VISIBLE
+            }
+            count >= 201 -> {
+                speechBubble.visibility = View.GONE
+                finishRelease()
+            }
+        }
     }
 
     private fun finishRelease() {
